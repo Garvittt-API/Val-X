@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/Garvittt-API/Val-X#readme
+    about: Check the README for setup instructions and documentation
+  - name: Discussions
+    url: https://github.com/Garvittt-API/Val-X/discussions
+    about: Ask questions and discuss ideas with the community
