@@ -2,15 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ValX - Valorant Tracker</title>
+    <title>ValX Overlay</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@100;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: transparent;
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        color: white;
+        overflow: hidden;
+        user-select: none;
+      }
+      [data-tauri-drag-region] { -webkit-app-region: drag; }
+      button, a { -webkit-app-region: no-drag; }
+    </style>
   </head>
-  <body class="bg-bg-primary text-white antialiased">
+  <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/overlay.tsx"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import { useMatchStore } from "../../store/matchStore";
-import PlayerCard from "./PlayerCard";
 import MatchHeader from "./MatchHeader";
+import PlayerCard from "./PlayerCard";
 
 export default function LiveMatch() {
   const view = useMatchStore((s) => s.view);
@@ -8,64 +8,79 @@ export default function LiveMatch() {
   const enemies = view.players.filter((p) => p.team === "Enemy");
 
   return (
-    <div className="p-6 space-y-6">
+    <div>
       <MatchHeader />
+      <div className="p-4">
+        {/* Score display */}
+        {(view.allyScore > 0 || view.enemyScore > 0) && (
+          <div className="flex items-center justify-center gap-8 py-4 mb-4 border-b border-white/[0.12] fade-up">
+            <div className="text-center">
+              <div className="display-text text-4xl font-thin text-neon">
+                {view.allyScore}
+              </div>
+              <div className="micro-label mt-1">ALLIES</div>
+            </div>
+            <div className="w-px h-12 bg-white/[0.08]" />
+            <div className="text-center">
+              <div className="display-text text-4xl font-thin text-err">
+                {view.enemyScore}
+              </div>
+              <div className="micro-label mt-1">ENEMIES</div>
+            </div>
+          </div>
+        )}
 
-      {/* Score Display */}
-      {view.allyScore > 0 && (
-        <div className="flex items-center justify-center gap-10 py-4 animate-fade-in">
-          <div className="text-right">
-            <div className="text-5xl font-bold text-accent-blue text-glow-blue font-mono">{view.allyScore}</div>
-            <div className="text-white/30 text-xs uppercase tracking-wider mt-1">Allies</div>
-          </div>
-          <div className="w-px h-16 bg-gradient-to-b from-transparent via-white/10 to-transparent" />
-          <div className="text-left">
-            <div className="text-5xl font-bold text-accent-red text-glow-red font-mono">{view.enemyScore}</div>
-            <div className="text-white/30 text-xs uppercase tracking-wider mt-1">Enemies</div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-6">
-        {/* Allies */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2.5 h-2.5 rounded-full bg-accent-blue shadow-glow-blue" />
-            <h2 className="text-xs font-semibold text-white/50 uppercase tracking-wider">
-              Your Team
-            </h2>
-          </div>
-          <div className="space-y-3">
-            {allies.map((player) => (
-              <PlayerCard key={player.puuid} player={player} side="ally" />
-            ))}
-          </div>
+        {/* Section header */}
+        <div className="flex items-center gap-3 mb-4 fade-up" style={{ animationDelay: "0.1s" }}>
+          <span className="display-text text-2xl font-light text-white/80">COMBAT_ROSTER</span>
+          <span className="micro-label">IN_GAME PHASE</span>
         </div>
 
-        {/* Enemies */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2.5 h-2.5 rounded-full bg-accent-red shadow-glow-red" />
-            <h2 className="text-xs font-semibold text-white/50 uppercase tracking-wider">
-              Enemy Team
-            </h2>
+        <div className="grid grid-cols-2 gap-px bg-white/[0.08]">
+          {/* Allies */}
+          <div className="bg-bg-primary p-3">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full bg-neon" />
+              <span className="micro-label text-neon/60">ALLIED FORCES</span>
+            </div>
+            {allies.length > 0 ? (
+              allies.map((player, i) => (
+                <PlayerCard key={player.puuid} player={player} side="ally" index={i} />
+              ))
+            ) : (
+              <div className="py-12 text-center text-white/10 text-xs font-mono">
+                NO ALLY DATA
+              </div>
+            )}
           </div>
-          <div className="space-y-3">
-            {enemies.map((player) => (
-              <PlayerCard key={player.puuid} player={player} side="enemy" />
-            ))}
+
+          {/* Enemies */}
+          <div className="bg-bg-primary p-3">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full bg-err" />
+              <span className="micro-label text-err/60">HOSTILE FORCES</span>
+            </div>
+            {enemies.length > 0 ? (
+              enemies.map((player, i) => (
+                <PlayerCard key={player.puuid} player={player} side="enemy" index={i} />
+              ))
+            ) : (
+              <div className="py-12 text-center text-white/10 text-xs font-mono">
+                NO ENEMY DATA
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Combat loading indicator */}
+        {view.combatLoading && (
+          <div className="mt-4 py-3 border border-white/[0.12] text-center">
+            <span className="text-[10px] font-mono text-white/20 animate-pulse">
+              LOADING COMBAT TELEMETRY...
+            </span>
+          </div>
+        )}
       </div>
-
-      {/* Combat Loading */}
-      {view.combatLoading && (
-        <div className="text-center py-3 glass rounded-xl border border-white/5">
-          <span className="text-white/30 text-sm animate-pulse font-mono">
-            Loading combat stats...
-          </span>
-        </div>
-      )}
     </div>
   );
 }

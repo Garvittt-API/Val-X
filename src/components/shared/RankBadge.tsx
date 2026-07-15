@@ -4,62 +4,62 @@ interface Props {
   tier: number;
   name: string;
   size?: "sm" | "md" | "lg";
+  icon?: string;
 }
 
-const rankColors: Record<number, { bg: string; glow: string }> = {
-  0: { bg: "bg-gray-600", glow: "" },
-  3: { bg: "bg-rank-iron", glow: "shadow-[0_0_12px_rgba(104,112,122,0.3)]" },
-  4: { bg: "bg-rank-iron", glow: "shadow-[0_0_12px_rgba(104,112,122,0.3)]" },
-  5: { bg: "bg-rank-iron", glow: "shadow-[0_0_12px_rgba(104,112,122,0.3)]" },
-  6: { bg: "bg-rank-bronze", glow: "shadow-[0_0_12px_rgba(205,127,78,0.3)]" },
-  7: { bg: "bg-rank-bronze", glow: "shadow-[0_0_12px_rgba(205,127,78,0.3)]" },
-  8: { bg: "bg-rank-bronze", glow: "shadow-[0_0_12px_rgba(205,127,78,0.3)]" },
-  9: { bg: "bg-rank-silver", glow: "shadow-[0_0_12px_rgba(140,155,176,0.3)]" },
-  10: { bg: "bg-rank-silver", glow: "shadow-[0_0_12px_rgba(140,155,176,0.3)]" },
-  11: { bg: "bg-rank-silver", glow: "shadow-[0_0_12px_rgba(140,155,176,0.3)]" },
-  12: { bg: "bg-rank-gold", glow: "shadow-[0_0_12px_rgba(201,167,56,0.3)]" },
-  13: { bg: "bg-rank-gold", glow: "shadow-[0_0_12px_rgba(201,167,56,0.3)]" },
-  14: { bg: "bg-rank-gold", glow: "shadow-[0_0_12px_rgba(201,167,56,0.3)]" },
-  15: { bg: "bg-rank-platinum", glow: "shadow-[0_0_12px_rgba(0,184,169,0.3)]" },
-  16: { bg: "bg-rank-platinum", glow: "shadow-[0_0_12px_rgba(0,184,169,0.3)]" },
-  17: { bg: "bg-rank-platinum", glow: "shadow-[0_0_12px_rgba(0,184,169,0.3)]" },
-  18: { bg: "bg-rank-diamond", glow: "shadow-[0_0_16px_rgba(74,107,255,0.4)]" },
-  19: { bg: "bg-rank-diamond", glow: "shadow-[0_0_16px_rgba(74,107,255,0.4)]" },
-  20: { bg: "bg-rank-diamond", glow: "shadow-[0_0_16px_rgba(74,107,255,0.4)]" },
-  21: { bg: "bg-rank-ascendant", glow: "shadow-[0_0_16px_rgba(0,200,83,0.4)]" },
-  22: { bg: "bg-rank-ascendant", glow: "shadow-[0_0_16px_rgba(0,200,83,0.4)]" },
-  23: { bg: "bg-rank-ascendant", glow: "shadow-[0_0_16px_rgba(0,200,83,0.4)]" },
-  24: { bg: "bg-rank-immortal", glow: "shadow-[0_0_18px_rgba(255,70,85,0.5)]" },
-  25: { bg: "bg-rank-immortal", glow: "shadow-[0_0_18px_rgba(255,70,85,0.5)]" },
-  26: { bg: "bg-rank-immortal", glow: "shadow-[0_0_18px_rgba(255,70,85,0.5)]" },
-  27: { bg: "bg-rank-radiant", glow: "shadow-[0_0_20px_rgba(255,189,68,0.5)]" },
+const RANKS: Record<number, { initials: string; bg: string; color: string }> = {
+  0: { initials: "UN", bg: "bg-white/5", color: "text-white/40" },
+  3: { initials: "IR", bg: "bg-rank-iron", color: "text-white/90" },
+  4: { initials: "IR", bg: "bg-rank-iron", color: "text-white/90" },
+  5: { initials: "IR", bg: "bg-rank-iron", color: "text-white/90" },
+  6: { initials: "BR", bg: "bg-rank-bronze", color: "text-white/90" },
+  7: { initials: "BR", bg: "bg-rank-bronze", color: "text-white/90" },
+  8: { initials: "BR", bg: "bg-rank-bronze", color: "text-white/90" },
+  9: { initials: "SV", bg: "bg-rank-silver", color: "text-white/90" },
+  10: { initials: "SV", bg: "bg-rank-silver", color: "text-white/90" },
+  11: { initials: "SV", bg: "bg-rank-silver", color: "text-white/90" },
+  12: { initials: "GD", bg: "bg-rank-gold", color: "text-white/90" },
+  13: { initials: "GD", bg: "bg-rank-gold", color: "text-white/90" },
+  14: { initials: "GD", bg: "bg-rank-gold", color: "text-white/90" },
+  15: { initials: "PL", bg: "bg-rank-platinum", color: "text-white/90" },
+  16: { initials: "PL", bg: "bg-rank-platinum", color: "text-white/90" },
+  17: { initials: "PL", bg: "bg-rank-platinum", color: "text-white/90" },
+  18: { initials: "DM", bg: "bg-rank-diamond", color: "text-white/90" },
+  19: { initials: "DM", bg: "bg-rank-diamond", color: "text-white/90" },
+  20: { initials: "DM", bg: "bg-rank-diamond", color: "text-white/90" },
+  21: { initials: "AS", bg: "bg-rank-ascendant", color: "text-white/90" },
+  22: { initials: "AS", bg: "bg-rank-ascendant", color: "text-white/90" },
+  23: { initials: "AS", bg: "bg-rank-ascendant", color: "text-white/90" },
+  24: { initials: "IM", bg: "bg-rank-immortal", color: "text-white/90" },
+  25: { initials: "IM", bg: "bg-rank-immortal", color: "text-white/90" },
+  26: { initials: "IM", bg: "bg-rank-immortal", color: "text-white/90" },
+  27: { initials: "RA", bg: "bg-rank-radiant", color: "text-white/90" },
 };
 
-const sizeClasses = {
-  sm: "w-8 h-8 text-[10px]",
-  md: "w-10 h-10 text-xs",
-  lg: "w-14 h-14 text-sm",
+const SIZE_CLASSES = {
+  sm: "w-6 h-6 text-[8px]",
+  md: "w-8 h-8 text-[9px]",
+  lg: "w-11 h-11 text-[11px]",
 };
 
-export default function RankBadge({ tier, name, size = "md" }: Props) {
-  const rank = rankColors[tier] || { bg: "bg-gray-600", glow: "" };
-  const initials = name
-    .split(" ")
-    .map((w) => w.charAt(0))
-    .join("")
-    .slice(0, 2);
+export default function RankBadge({ tier, name, size = "md", icon }: Props) {
+  const rank = RANKS[tier] || RANKS[0];
 
   return (
     <div
       className={clsx(
-        "rounded-xl flex items-center justify-center font-bold text-white/90 border border-white/10 transition-all duration-300",
+        "flex items-center justify-center font-bold border border-white/10 overflow-hidden",
         rank.bg,
-        rank.glow,
-        sizeClasses[size]
+        rank.color,
+        SIZE_CLASSES[size]
       )}
       title={name}
     >
-      {initials || "?"}
+      {icon ? (
+        <img src={icon} alt={name} className="w-full h-full object-contain" />
+      ) : (
+        rank.initials
+      )}
     </div>
   );
 }

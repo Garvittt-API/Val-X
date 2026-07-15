@@ -1,133 +1,90 @@
 import { useMatchStore } from "../../store/matchStore";
+import { useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import RankBadge from "../shared/RankBadge";
-import { Wifi, WifiOff, Users, Trophy, Clock } from "lucide-react";
 
 export default function Dashboard() {
   const view = useMatchStore((s) => s.view);
   const me = view.me;
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between animate-fade-in">
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard</h1>
-          <p className="text-white/40 text-sm mt-1">{view.activity}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {view.state !== "NoGame" ? (
-            <div className="flex items-center gap-2 px-4 py-2 glass rounded-full border border-green-500/20 shadow-glow-green">
-              <Wifi size={14} className="text-green-400" />
-              <span className="text-green-400 text-xs font-medium">Connected</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 px-4 py-2 glass rounded-full border border-red-500/20">
-              <WifiOff size={14} className="text-red-400/60" />
-              <span className="text-red-400/60 text-xs font-medium">Offline</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Status Cards */}
-      <div className="grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-        <StatusCard
-          icon={<Trophy size={18} />}
-          label="Game State"
-          value={view.state === "NoGame" ? "Idle" : view.mode || "Menu"}
-          color="blue"
-        />
-        <StatusCard
-          icon={<Users size={18} />}
-          label="Players"
-          value={view.players.length > 0 ? `${view.players.length} in match` : "None"}
-          color="cyan"
-        />
-        <StatusCard
-          icon={<Clock size={18} />}
-          label="Mode"
-          value={view.mode || "Not in queue"}
-          color="purple"
-        />
-      </div>
-
-      {/* Self Profile */}
+    <div className="p-4 space-y-4">
+      {/* Self Profile Section */}
       {me && (
-        <div className="card-3d-inner p-6 neon-border animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Your Profile</h2>
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <RankBadge tier={me.rankTier} name={me.rankName} size="lg" />
-              <div className="absolute -inset-2 bg-accent-blue/10 rounded-2xl blur-xl pointer-events-none" />
-            </div>
-            <div className="flex-1">
-              <div className="text-xl font-bold text-white">{me.name || "Unknown"}</div>
-              <div className="text-white/40 text-sm">Level {me.accountLevel}</div>
-              <div className="flex gap-6 mt-3">
-                <Stat label="RR" value={me.rr.toString()} highlight />
-                <Stat label="Win Rate" value={`${me.winRate}%`} />
-                <Stat label="Wins" value={me.wins.toString()} />
-                <Stat label="Games" value={me.games.toString()} />
+        <div className="fade-up">
+          <div className="micro-label mb-3">PLAYER_INTEL</div>
+          <div className="bg-bg-elevated border border-white/[0.12] p-4">
+            <div className="flex items-center gap-5">
+              <RankBadge tier={me.rankTier} name={me.rankName} size="lg" icon={me.rankIcon} />
+              <div>
+                <div className="display-text text-lg font-light text-white/90">{me.name || "UNKNOWN"}</div>
+                <div className="micro-label mt-0.5">LEVEL {me.accountLevel}</div>
+              </div>
+              <div className="ml-auto flex items-center gap-3">
+                <RankBadge tier={me.peakRankTier} name={me.peakRankName} size="md" icon={me.peakRankIcon} />
+                <div className="text-right">
+                  <div className="micro-label">PEAK</div>
+                  <div className="text-[10px] font-mono text-white/40">{me.peakRankName}</div>
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-white/30 text-xs mb-2 uppercase tracking-wider">Peak</div>
-              <RankBadge tier={me.peakRankTier} name={me.peakRankName} size="md" />
+            <div className="grid grid-cols-4 gap-px bg-white/[0.08] mt-4">
+              <ProfileStat label="RR" value={`${me.rr}`} />
+              <ProfileStat label="WIN_RATE" value={`${me.winRate}%`} highlight />
+              <ProfileStat label="WINS" value={`${me.wins}`} />
+              <ProfileStat label="GAMES" value={`${me.games}`} />
             </div>
           </div>
         </div>
       )}
 
-      {/* Game Status */}
-      {view.state !== "NoGame" && (
-        <div className="card-3d-inner p-6 neon-border animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <h2 className="text-sm font-semibold text-white/50 uppercase tracking-wider mb-4">Current Match</h2>
-          {view.map && (
-            <div className="flex items-center gap-4 mb-5">
-              <div className="px-3 py-1.5 glass rounded-lg border border-white/5">
-                <span className="text-white/50 text-xs">Map</span>
-                <div className="text-white font-medium">{view.map}</div>
+      {/* Current Match Summary */}
+      {view.state !== "NoGame" && view.players.length > 0 && (
+        <div className="fade-up" style={{ animationDelay: "0.1s" }}>
+          <div className="micro-label mb-3">MATCH_SUMMARY</div>
+          <div className="bg-bg-elevated border border-white/[0.12]">
+            <div className="flex items-center justify-between py-3 px-4 border-b border-white/[0.12]">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-neon" />
+                <span className="display-text text-sm text-white/70">{view.mode}</span>
               </div>
-              {view.allyScore > 0 && (
-                <div className="flex items-center gap-3 ml-auto">
-                  <span className="text-accent-blue font-bold text-2xl text-glow-blue">{view.allyScore}</span>
-                  <div className="w-px h-8 bg-white/10" />
-                  <span className="text-accent-red font-bold text-2xl text-glow-red">{view.enemyScore}</span>
-                </div>
+              <span className="text-[10px] font-mono text-white/30">{view.map}</span>
+              {(view.allyScore > 0 || view.enemyScore > 0) && (
+                <span className="font-mono text-sm">
+                  <span className="text-neon">{view.allyScore}</span>
+                  <span className="text-white/20 mx-1">—</span>
+                  <span className="text-err">{view.enemyScore}</span>
+                </span>
               )}
             </div>
-          )}
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 rounded-full bg-accent-blue shadow-glow-blue" />
-                <span className="text-white/40 text-xs uppercase tracking-wider font-medium">Allies</span>
-              </div>
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-px bg-white/[0.08]">
+              <div className="bg-bg-elevated p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-neon" />
+                  <span className="micro-label text-neon/60">ALLIES</span>
+                </div>
                 {view.players
                   .filter((p) => p.team === "Ally")
                   .map((p) => (
-                    <div key={p.puuid} className="flex items-center gap-3 py-2 px-3 glass rounded-lg">
-                      <RankBadge tier={p.rankTier} name={p.rankName} size="sm" />
-                      <span className="text-white text-sm">{p.name || "Hidden"}</span>
-                      <span className="text-white/30 text-xs ml-auto">{p.agent}</span>
+                    <div key={p.puuid} className="flex items-center gap-2 py-1.5 text-[10px]">
+                      <RankBadge tier={p.rankTier} name={p.rankName} size="sm" icon={p.rankIcon} />
+                      <span className="text-white/60 truncate flex-1">{p.name || "Hidden"}</span>
+                      <span className="font-mono text-white/25">{p.agent}</span>
                     </div>
                   ))}
               </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 rounded-full bg-accent-red shadow-glow-red" />
-                <span className="text-white/40 text-xs uppercase tracking-wider font-medium">Enemies</span>
-              </div>
-              <div className="space-y-2">
+              <div className="bg-bg-elevated p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-err" />
+                  <span className="micro-label text-err/60">ENEMIES</span>
+                </div>
                 {view.players
                   .filter((p) => p.team === "Enemy")
                   .map((p) => (
-                    <div key={p.puuid} className="flex items-center gap-3 py-2 px-3 glass rounded-lg">
-                      <RankBadge tier={p.rankTier} name={p.rankName} size="sm" />
-                      <span className="text-white text-sm">{p.name || "Hidden"}</span>
-                      <span className="text-white/30 text-xs ml-auto">{p.agent}</span>
+                    <div key={p.puuid} className="flex items-center gap-2 py-1.5 text-[10px]">
+                      <RankBadge tier={p.rankTier} name={p.rankName} size="sm" icon={p.rankIcon} />
+                      <span className="text-white/60 truncate flex-1">{p.name || "Hidden"}</span>
+                      <span className="font-mono text-white/25">{p.agent}</span>
                     </div>
                   ))}
               </div>
@@ -138,72 +95,86 @@ export default function Dashboard() {
 
       {/* No Game State */}
       {view.state === "NoGame" && !me && (
-        <div className="card-3d-inner p-16 text-center animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-blue/20 to-accent-cyan/10 mb-6 shadow-glow-blue">
-            <span className="text-3xl font-bold text-accent-blue/60">V</span>
+        <div className="fade-up flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="display-text text-6xl font-thin text-white/[0.06] mb-4">VALX</div>
+            <div className="micro-label">AWAITING CLIENT CONNECTION</div>
           </div>
-          <h2 className="text-xl font-semibold text-white/60 mb-2">Waiting for VALORANT</h2>
-          <p className="text-white/30 text-sm max-w-xs mx-auto">
-            Launch VALORANT and start a match to see live data
-          </p>
         </div>
       )}
+
+      {/* Recent Performance */}
+      {me && view.history.length > 0 && (
+        <div className="fade-up" style={{ animationDelay: "0.2s" }}>
+          <div className="micro-label mb-3">RECENT_PERFORMANCE</div>
+          <div className="grid grid-cols-5 gap-px bg-white/[0.08]">
+            <PerfStat label="STREAK" value={me.streak > 0 ? `+${me.streak}W` : me.streak < 0 ? `${me.streak}L` : "0"} />
+            <PerfStat label="RECENT_W" value={`${me.recentWins}`} />
+            <PerfStat label="RECENT_L" value={`${me.recentLosses}`} />
+            <PerfStat label="RR_TREND" value={me.rrTrend >= 0 ? `+${me.rrTrend}` : `${me.rrTrend}`} />
+            <PerfStat label="LEADERBOARD" value={me.leaderboard > 0 ? `#${me.leaderboard}` : "—"} />
+          </div>
+        </div>
+      )}
+
+      {/* Overlay Toggle */}
+      <div className="fade-up" style={{ animationDelay: "0.25s" }}>
+        <div className="micro-label mb-3">OVERLAY</div>
+        <OverlayToggle />
+      </div>
     </div>
   );
 }
 
-function StatusCard({
-  icon,
-  label,
-  value,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: string;
-}) {
-  const colors: Record<string, { bg: string; border: string; glow: string; icon: string }> = {
-    blue: {
-      bg: "from-blue-500/8 to-blue-600/3",
-      border: "border-blue-500/15",
-      glow: "shadow-glow-blue",
-      icon: "text-blue-400",
-    },
-    cyan: {
-      bg: "from-cyan-500/8 to-cyan-600/3",
-      border: "border-cyan-500/15",
-      glow: "shadow-glow-cyan",
-      icon: "text-cyan-400",
-    },
-    purple: {
-      bg: "from-purple-500/8 to-purple-600/3",
-      border: "border-purple-500/15",
-      glow: "shadow-glow-purple",
-      icon: "text-purple-400",
-    },
+function ProfileStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="bg-bg-elevated p-3">
+      <div className="micro-label mb-0.5">{label}</div>
+      <div className={`text-sm font-mono font-medium ${highlight ? "text-neon" : "text-white/70"}`}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function PerfStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-bg-elevated p-3">
+      <div className="micro-label mb-0.5">{label}</div>
+      <div className="text-xs font-mono text-white/60">{value}</div>
+    </div>
+  );
+}
+
+function OverlayToggle() {
+  const [overlayOpen, setOverlayOpen] = useState(false);
+
+  const toggle = async () => {
+    try {
+      const result = await invoke<boolean>("toggle_overlay");
+      setOverlayOpen(result);
+    } catch (e) {
+      console.error("Failed to toggle overlay:", e);
+    }
   };
 
-  const c = colors[color] || colors.blue;
-
   return (
-    <div
-      className={`bg-gradient-to-br ${c.bg} glass rounded-xl p-5 border ${c.border} transition-all duration-300 hover:scale-[1.02] hover:shadow-depth-md group`}
-    >
-      <div className={`flex items-center gap-2 mb-3 ${c.icon} opacity-70`}>
-        {icon}
-        <span className="text-xs font-medium uppercase tracking-wider">{label}</span>
+    <div className="bg-bg-elevated border border-white/[0.12] p-4 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className={`w-2 h-2 rounded-full ${overlayOpen ? "bg-neon" : "bg-white/20"}`} />
+        <span className="text-sm text-white/70">In-Game Overlay</span>
+        <span className="text-[10px] font-mono text-white/25">Always-on-top transparent window</span>
       </div>
-      <div className="text-white font-semibold text-lg">{value}</div>
-    </div>
-  );
-}
-
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className={highlight ? "stat-highlight rounded-lg px-3 py-1.5 -mx-3 -my-1.5" : ""}>
-      <div className="text-white/30 text-[10px] uppercase tracking-wider">{label}</div>
-      <div className={`font-semibold ${highlight ? "text-accent-blue text-glow-blue" : "text-white"}`}>{value}</div>
+      <button
+        onClick={toggle}
+        className={`px-4 py-1.5 text-[10px] font-bold tracking-wider uppercase transition-colors ${
+          overlayOpen
+            ? "bg-err/20 text-err border border-err/30 hover:bg-err/30"
+            : "bg-neon/20 text-neon border border-neon/30 hover:bg-neon/30"
+        }`}
+      >
+        {overlayOpen ? "CLOSE" : "OPEN"}
+      </button>
     </div>
   );
 }

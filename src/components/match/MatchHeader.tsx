@@ -2,35 +2,30 @@ import { useMatchStore } from "../../store/matchStore";
 
 export default function MatchHeader() {
   const view = useMatchStore((s) => s.view);
+  const minutes = Math.floor(view.phaseTime / 60);
+  const seconds = view.phaseTime % 60;
+  const time = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
   return (
-    <div className="glass-strong rounded-2xl p-4 border border-white/5 neon-border">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="px-4 py-2 glass rounded-xl border border-accent-blue/20 shadow-glow-blue">
-            <span className="text-accent-blue text-sm font-semibold">
-              {view.mode || "Unknown Mode"}
-            </span>
-          </div>
-          {view.map && (
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent-cyan/50" />
-              <span className="text-white/50 text-sm">{view.map}</span>
-            </div>
-          )}
+    <div className="flex items-center justify-between py-3 px-4 border-b border-white/[0.12]">
+      <div className="flex items-center gap-6">
+        {/* Mode */}
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-neon" />
+          <span className="display-text text-sm font-medium text-white/70">{view.mode || "UNKNOWN"}</span>
         </div>
-        <div className="flex items-center gap-4">
-          {view.phaseTime > 0 && (
-            <div className="px-4 py-2 glass rounded-xl border border-accent-gold/20">
-              <span className="text-accent-gold text-sm font-mono font-semibold text-glow-gold">
-                {Math.floor(view.phaseTime / 60)}:{(view.phaseTime % 60).toString().padStart(2, "0")}
-              </span>
-            </div>
-          )}
-          <div className="text-white/30 text-xs font-mono">
-            {view.players.length} players
-          </div>
-        </div>
+        {/* Map */}
+        {view.map && (
+          <span className="text-[10px] font-mono text-white/30">{view.map}</span>
+        )}
+      </div>
+      <div className="flex items-center gap-6">
+        {/* Timer */}
+        {view.phaseTime > 0 && (
+          <span className="text-sm font-mono font-medium text-neon">{time}</span>
+        )}
+        {/* Player count */}
+        <span className="micro-label">{view.players.length} PLAYERS</span>
       </div>
     </div>
   );

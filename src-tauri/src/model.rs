@@ -73,6 +73,7 @@ pub struct ScoreEntry {
 #[derive(Serialize, Clone, Debug, PartialEq, Eq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct HistoryEntry {
+    pub match_id: String,
     pub map: String,
     pub rr_change: i32,
     pub tier: u32,

@@ -6,37 +6,29 @@ interface Props {
 
 export default function OverlayPlayer({ player }: Props) {
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 hover:bg-white/5 rounded-lg transition-all duration-200 group">
-      {/* Agent initial */}
-      <div className="w-6 h-6 rounded-lg glass flex items-center justify-center text-[9px] font-bold text-white/60 border border-white/5">
+    <div className="flex items-center gap-2 px-2 py-1 hover:bg-white/[0.03] transition-colors">
+      {/* Agent */}
+      <div className="w-5 h-5 flex items-center justify-center border border-white/[0.12] text-[8px] font-bold text-white/40">
         {player.agent ? player.agent.charAt(0) : "?"}
       </div>
 
       {/* Name */}
-      <div className="flex-1 min-w-0">
-        <div className="text-white/80 text-[11px] font-medium truncate">
-          {player.name || "Hidden"}
-        </div>
-      </div>
+      <span className="flex-1 min-w-0 text-[10px] font-medium text-white/60 truncate">
+        {player.name || "Hidden"}
+      </span>
 
       {/* Stats */}
       {player.hasCombat && (
-        <div className="flex gap-2.5 text-[10px] font-mono">
-          <span className="text-white/40">
-            {player.lastKills}/{player.lastDeaths}
-          </span>
-          <span className="text-accent-cyan/60">{player.lastHs}%</span>
-          <span className="text-white/30">{player.lastAcs}</span>
+        <div className="flex gap-2 text-[9px] font-mono">
+          <span className="text-white/30">{player.lastKills}/{player.lastDeaths}</span>
+          <span className="text-neon/40">{player.lastHs}%</span>
+          <span className="text-white/20">{player.lastAcs}</span>
         </div>
       )}
 
       {/* Rank */}
-      <div className="w-6 h-6 rounded-lg glass flex items-center justify-center text-[8px] font-bold text-white/50 border border-white/5">
-        {player.rankName
-          .split(" ")
-          .map((w) => w.charAt(0))
-          .join("")
-          .slice(0, 2) || "?"}
+      <div className="w-5 h-5 flex items-center justify-center border border-white/[0.12] text-[7px] font-bold text-white/35">
+        {player.rankName ? player.rankName.substring(0, 2).toUpperCase() : "—"}
       </div>
     </div>
   );

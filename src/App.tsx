@@ -1,23 +1,28 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useMatchStore } from "./store/matchStore";
 import { useSettingsStore } from "./store/settingsStore";
-import Sidebar from "./components/layout/Sidebar";
-import TitleBar from "./components/layout/TitleBar";
+import { useThemeStore } from "./store/themeStore";
+import Masthead from "./components/layout/Masthead";
+import Ticker from "./components/layout/Ticker";
+import KpiGrid from "./components/layout/KpiGrid";
 import Dashboard from "./components/dashboard/Dashboard";
 import AgentSelect from "./components/match/AgentSelect";
 import LiveMatch from "./components/match/LiveMatch";
 import PlayerSearch from "./components/search/PlayerSearch";
 import MatchHistory from "./components/history/MatchHistory";
-import { Box } from "lucide-react";
+import ThemesView from "./components/themes/ThemesView";
+import LoadoutView from "./components/loadout/LoadoutView";
+import IntelligenceRail from "./components/layout/IntelligenceRail";
 import type { MatchView } from "./types";
 
 function App() {
   const setView = useMatchStore((s) => s.setView);
   const currentView = useSettingsStore((s) => s.currentView);
   const view = useMatchStore((s) => s.view);
+  const currentTheme = useThemeStore((s) => s.currentTheme);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Listen for match view events from Tauri backend
     const unlisten = (window as any).__TAURI__?.event?.listen?.(
       "match-view",
       (event: { payload: MatchView }) => {
@@ -29,15 +34,17 @@ function App() {
     };
   }, [setView]);
 
-  const renderView = () => {
-    // Auto-switch to match view when in a game
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    setCursorPos({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const renderMainContent = () => {
     if (view.state === "PreGame" && currentView === "dashboard") {
       return <AgentSelect />;
     }
     if (view.state === "CoreGame" && currentView === "dashboard") {
       return <LiveMatch />;
     }
-
     switch (currentView) {
       case "dashboard":
         return <Dashboard />;
@@ -47,42 +54,44 @@ function App() {
         return <PlayerSearch />;
       case "history":
         return <MatchHistory />;
-      case "overlay":
-        return <OverlaySettings />;
+      case "themes":
+        return <ThemesView />;
+      case "loadout":
+        return <LoadoutView />;
       default:
         return <Dashboard />;
     }
   };
 
   return (
-    <div className="h-screen flex flex-col bg-bg-primary overflow-hidden">
-      <TitleBar />
+    <div
+      className="h-screen flex flex-col overflow-hidden"
+      onMouseMove={handleMouseMove}
+      style={{
+        background: currentTheme.bg,
+        "--theme-accent": currentTheme.accent,
+        "--theme-accent-rgb": currentTheme.accentRgb,
+      } as React.CSSProperties}
+    >
+      <Masthead cursorPos={cursorPos} />
+      <Ticker />
+      <KpiGrid />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
         <main className="flex-1 overflow-y-auto">
-          {renderView()}
+          {renderMainContent()}
         </main>
+        <IntelligenceRail />
       </div>
-    </div>
-  );
-}
-
-function OverlaySettings() {
-  return (
-    <div className="p-6 space-y-6">
-      <div className="animate-fade-in">
-        <h1 className="text-2xl font-bold text-white tracking-tight">Overlay Settings</h1>
-        <p className="text-white/40 text-sm mt-1">Configure the in-game overlay appearance and position</p>
-      </div>
-      <div className="card-3d-inner p-8 text-center animate-fade-in" style={{ animationDelay: "0.1s" }}>
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-purple/20 to-accent-blue/10 mb-6 shadow-glow-purple">
-          <Box size={24} className="text-accent-purple/60" />
+      <footer className="min-h-[20px] bg-bg-primary border-t border-white/[0.12] flex items-center justify-between px-4 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="status-dot" style={{ background: currentTheme.accent }} />
+          <span className="micro-label">SESSION ACTIVE</span>
         </div>
-        <h2 className="text-lg font-semibold text-white/50 mb-2">Configure Overlay</h2>
-        <p className="text-white/25 text-sm max-w-xs mx-auto">
-          Customize the in-game overlay appearance, position, and transparency
-        </p>
-      </div>
+        <div className="flex items-center gap-4">
+          <span className="micro-label">CLIENT DISCONNECTED</span>
+          <span className="micro-label">REFRESH: 3S</span>
+        </div>
+      </footer>
     </div>
   );
 }

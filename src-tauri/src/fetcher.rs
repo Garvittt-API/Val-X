@@ -342,6 +342,137 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
         }
     }
 
+    // ADR: sum damageDealt across all rounds for this player
+    let adr = if rounds_based {
+        let mut total_damage = 0u64;
+        if let Some(rounds_arr) = detail.get("roundResults").and_then(|r| r.as_array()) {
+            for round in rounds_arr {
+                if let Some(ps_arr) = round.get("playerStats").and_then(|p| p.as_array()) {
+                    for ps in ps_arr {
+                        if ps.get("subject").and_then(|v| v.as_str()) != Some(puuid) {
+                            continue;
+                        }
+                        total_damage += ps
+                            .get("damageDealt")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or(0);
+                    }
+                }
+            }
+        }
+        (total_damage / rounds as u64) as u32
+    } else {
+        0
+    };
+
+    // KAST: percentage of rounds where player got a Kill, Assist, Survived, or was Traded
+    let kast = if rounds_based {
+        let mut kast_rounds = 0u32;
+        if let Some(rounds_arr) = detail.get("roundResults").and_then(|r| r.as_array()) {
+            for round in rounds_arr {
+                let mut killed = false;
+                let mut assisted = false;
+                let mut survived = false;
+                let mut traded = false;
+
+                // Check player stats for kills, assists, alive status
+                if let Some(ps_arr) = round.get("playerStats").and_then(|p| p.as_array()) {
+                    for ps in ps_arr {
+                        let subject = ps.get("subject").and_then(|v| v.as_str());
+                        if subject == Some(puuid) {
+                            let kills = ps
+                                .get("kills")
+                                .and_then(|v| v.as_array())
+                                .map(|a| a.len() as u32)
+                                .unwrap_or(0);
+                            let assists = ps
+                                .get("assists")
+                                .and_then(|v| v.as_array())
+                                .map(|a| a.len() as u32)
+                                .unwrap_or(0);
+                            killed = kills > 0;
+                            assisted = assists > 0;
+                        }
+                    }
+                }
+
+                // Refined alive check: player survived if they're in playerStats
+                // and NOT in any kill's victim list
+                if let Some(ps_arr) = round.get("playerStats").and_then(|p| p.as_array()) {
+                    let is_self = |ps: &Value| {
+                        ps.get("subject").and_then(|v| v.as_str()) == Some(puuid)
+                    };
+                    if ps_arr.iter().any(|ps| is_self(ps)) {
+                        // Check if this player was killed: look for them in other players' kill lists
+                        let was_killed = ps_arr.iter().any(|ps| {
+                            if is_self(ps) {
+                                return false;
+                            }
+                            if let Some(kills) = ps.get("kills").and_then(|k| k.as_array()) {
+                                kills.iter().any(|k| {
+                                    k.get("victim")
+                                        .and_then(|v| v.as_str())
+                                        == Some(puuid)
+                                })
+                            } else {
+                                false
+                            }
+                        });
+                        survived = !was_killed;
+
+                        // Check trade: player was killed, but a teammate killed the
+                        // attacker within the same round
+                        if was_killed {
+                            // Find who killed us
+                            if let Some(attacker) = ps_arr.iter().find_map(|ps| {
+                                if is_self(ps) {
+                                    return None;
+                                }
+                                let kills = ps.get("kills").and_then(|k| k.as_array())?;
+                                let kill = kills.iter().find(|k| {
+                                    k.get("victim")
+                                        .and_then(|v| v.as_str())
+                                        == Some(puuid)
+                                })?;
+                                kill.get("killer")
+                                    .and_then(|v| v.as_str())
+                                    .map(String::from)
+                            }) {
+                                // Did a teammate kill the attacker?
+                                traded = ps_arr.iter().any(|ps| {
+                                    if is_self(ps) {
+                                        return false;
+                                    }
+                                    // Check team: if both self and ps are on the same team
+                                    // (we can't easily check team here, so check if ps killed
+                                    // the attacker)
+                                    let kills = match ps.get("kills").and_then(|k| k.as_array()) {
+                                        Some(k) => k,
+                                        None => return false,
+                                    };
+                                    kills.iter().any(|k| {
+                                        k.get("victim")
+                                            .and_then(|v| v.as_str())
+                                            .as_deref()
+                                            == Some(attacker.as_str())
+                                    })
+                                });
+                            }
+                        }
+                    }
+                }
+
+                if killed || assisted || survived || traded {
+                    kast_rounds += 1;
+                }
+            }
+        }
+        let total = rounds.max(1);
+        (kast_rounds * 100 / total) as u32
+    } else {
+        0
+    };
+
     let mut scoreboard = Vec::new();
     if let Some(arr) = players {
         for p in arr {
@@ -381,8 +512,8 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
         deaths: stat("deaths"),
         assists: stat("assists"),
         acs,
-        adr: 0,
-        kast: 0,
+        adr,
+        kast,
         hs,
         self_rounds,
         enemy_rounds,
@@ -599,6 +730,7 @@ pub async fn fetch_history(
         })
         .unwrap_or_default();
     for (entry, id) in entries.iter_mut().zip(ids) {
+        entry.match_id = id.clone();
         if id.is_empty() {
             continue;
         }
@@ -610,6 +742,8 @@ pub async fn fetch_history(
             entry.deaths = stats.deaths;
             entry.assists = stats.assists;
             entry.acs = stats.acs;
+            entry.adr = stats.adr;
+            entry.kast = stats.kast;
             entry.hs = stats.hs;
             entry.self_rounds = stats.self_rounds;
             entry.enemy_rounds = stats.enemy_rounds;

@@ -55,7 +55,7 @@ impl EncounterStore {
     }
 
     pub fn record_seen(&mut self, match_id: &str, roster: &[(String, String, u32)], now: i64) {
-        for (puuid, name, rank_tier) in roster {
+        for (puuid, name, _rank_tier) in roster {
             let entry = self.encounters.entry(puuid.clone()).or_insert_with(|| EncounterEntry {
                 puuid: puuid.clone(),
                 name: name.clone(),
@@ -87,6 +87,7 @@ impl EncounterStore {
         }
     }
 
+    #[allow(dead_code)]
     pub fn pending_ids(&self) -> Vec<String> {
         self.match_history
             .iter()

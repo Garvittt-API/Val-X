@@ -59,6 +59,7 @@ export interface ScoreEntry {
 }
 
 export interface HistoryEntry {
+  matchId: string;
   map: string;
   rrChange: number;
   tier: number;
