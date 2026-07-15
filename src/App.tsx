@@ -12,6 +12,9 @@ import PlayerSearch from "./components/search/PlayerSearch";
 import MatchHistory from "./components/history/MatchHistory";
 import ThemesView from "./components/themes/ThemesView";
 import LoadoutView from "./components/loadout/LoadoutView";
+import AgentStatsView from "./components/stats/AgentStatsView";
+import MapStatsView from "./components/stats/MapStatsView";
+import TrendsView from "./components/stats/TrendsView";
 import IntelligenceRail from "./components/layout/IntelligenceRail";
 import type { MatchView } from "./types";
 
@@ -58,6 +61,12 @@ function App() {
         return <ThemesView />;
       case "loadout":
         return <LoadoutView />;
+      case "agent_stats":
+        return <AgentStatsView />;
+      case "map_stats":
+        return <MapStatsView />;
+      case "trends":
+        return <TrendsView />;
       default:
         return <Dashboard />;
     }

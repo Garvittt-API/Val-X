@@ -115,4 +115,30 @@ export interface PlayerProfile {
   history: HistoryEntry[];
 }
 
-export type NavView = "dashboard" | "match" | "overlay" | "search" | "history" | "loadout" | "chat" | "themes";
+export type NavView = "dashboard" | "match" | "overlay" | "search" | "history" | "loadout" | "chat" | "themes" | "agent_stats" | "map_stats" | "trends";
+
+export interface AgentStats {
+  agentName: string;
+  agentIcon: string;
+  games: number;
+  wins: number;
+  winRate: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  hs: number;
+  acs: number;
+  adr: number;
+  kast: number;
+}
+
+export interface MapStats {
+  mapName: string;
+  games: number;
+  wins: number;
+  winRate: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  topAgent: string;
+}

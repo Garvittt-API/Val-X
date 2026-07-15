@@ -253,6 +253,34 @@ async fn window_close(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+async fn get_agent_stats() -> Result<Vec<model::AgentStats>, String> {
+    let lf = lockfile::read_lockfile().map_err(|e| format!("Lockfile: {e:?}"))?;
+    let ctx = auth::fetch_auth(&lf).await.map_err(|e| format!("Auth: {e:?}"))?;
+    let region = detect_region_from_log().unwrap_or_else(|| client_version::Region {
+        region: "na".to_string(),
+        shard: "na".to_string(),
+    });
+    let version = client_version::fetch_client_version().await.unwrap_or_default();
+    let sd = static_cache::StaticData::load_or_fetch(&std::path::PathBuf::from("."));
+    let history = fetcher::fetch_history(&ctx, &region, &version, &sd).await;
+    Ok(fetcher::compute_agent_stats(&history, &sd))
+}
+
+#[tauri::command]
+async fn get_map_stats() -> Result<Vec<model::MapStats>, String> {
+    let lf = lockfile::read_lockfile().map_err(|e| format!("Lockfile: {e:?}"))?;
+    let ctx = auth::fetch_auth(&lf).await.map_err(|e| format!("Auth: {e:?}"))?;
+    let region = detect_region_from_log().unwrap_or_else(|| client_version::Region {
+        region: "na".to_string(),
+        shard: "na".to_string(),
+    });
+    let version = client_version::fetch_client_version().await.unwrap_or_default();
+    let sd = static_cache::StaticData::load_or_fetch(&std::path::PathBuf::from("."));
+    let history = fetcher::fetch_history(&ctx, &region, &version, &sd).await;
+    Ok(fetcher::compute_map_stats(&history, &sd))
+}
+
 pub fn run() {
     let wake = Arc::new(Notify::new());
     let combat = Arc::new(AtomicBool::new(false));
@@ -276,6 +304,8 @@ pub fn run() {
             window_minimize,
             window_toggle_maximize,
             window_close,
+            get_agent_stats,
+            get_map_stats,
         ])
         .setup(move |app| {
             let handle = app.handle().clone();

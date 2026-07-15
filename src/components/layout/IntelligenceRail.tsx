@@ -11,6 +11,12 @@ export default function IntelligenceRail() {
         <div className="micro-label mb-3">SELECTED_PLAYER</div>
         {me ? (
           <div>
+            {/* Player card art */}
+            {me.playerCard && (
+              <div className="mb-3 h-20 bg-bg-surface border border-white/[0.08] overflow-hidden">
+                <img src={me.playerCard} alt="" className="w-full h-full object-cover" />
+              </div>
+            )}
             <div className="display-text text-lg font-light text-white/90 mb-1">
               {me.name || "UNKNOWN"}
             </div>
@@ -22,6 +28,12 @@ export default function IntelligenceRail() {
               <DataCell label="GAMES" value={`${me.games}`} />
               <DataCell label="WINS" value={`${me.wins}`} />
               <DataCell label="LEVEL" value={`${me.accountLevel}`} />
+              {me.streak !== 0 && (
+                <DataCell label="STREAK" value={me.streak > 0 ? `+${me.streak}W` : `${me.streak}L`} />
+              )}
+              {me.rrTrend !== 0 && (
+                <DataCell label="RR_TREND" value={me.rrTrend >= 0 ? `+${me.rrTrend}` : `${me.rrTrend}`} />
+              )}
             </div>
           </div>
         ) : (
@@ -31,6 +43,19 @@ export default function IntelligenceRail() {
           </div>
         )}
       </div>
+
+      {/* Activity Status */}
+      {view.activity && view.activity !== "Idle" && (
+        <div className="p-4 border-b border-white/[0.12]">
+          <div className="micro-label mb-2">ACTIVITY</div>
+          <div className="text-xs font-mono text-white/50">{view.activity}</div>
+          {view.mapImage && (
+            <div className="mt-2 h-16 bg-bg-surface border border-white/[0.08] overflow-hidden">
+              <img src={view.mapImage} alt={view.map} className="w-full h-full object-cover" />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Match Logs */}
       <div className="p-4 border-b border-white/[0.12]">

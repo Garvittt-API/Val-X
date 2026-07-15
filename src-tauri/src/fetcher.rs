@@ -758,3 +758,74 @@ pub async fn fetch_history(
     }
     entries
 }
+
+pub fn compute_agent_stats(history: &[HistoryEntry], _sd: &StaticData) -> Vec<crate::model::AgentStats> {
+    use std::collections::HashMap;
+    let mut map: HashMap<String, crate::model::AgentStats> = HashMap::new();
+
+    for h in history {
+        if !h.has_stats || h.agent_name.is_empty() {
+            continue;
+        }
+        let entry = map.entry(h.agent_name.clone()).or_insert_with(|| crate::model::AgentStats {
+            agent_name: h.agent_name.clone(),
+            agent_icon: h.agent_icon.clone(),
+            ..Default::default()
+        });
+        entry.games += 1;
+        if h.won {
+            entry.wins += 1;
+        }
+        entry.kills += h.kills;
+        entry.deaths += h.deaths;
+        entry.assists += h.assists;
+        entry.hs += h.hs;
+        entry.acs += h.acs;
+        entry.adr += h.adr;
+        entry.kast += h.kast;
+    }
+
+    let mut stats: Vec<crate::model::AgentStats> = map.into_values().collect();
+    for s in &mut stats {
+        if s.games > 0 {
+            s.win_rate = s.wins * 100 / s.games;
+            s.hs /= s.games;
+            s.acs /= s.games;
+            s.adr /= s.games;
+            s.kast /= s.games;
+        }
+    }
+    stats.sort_by(|a, b| b.games.cmp(&a.games));
+    stats
+}
+
+pub fn compute_map_stats(history: &[HistoryEntry], _sd: &StaticData) -> Vec<crate::model::MapStats> {
+    use std::collections::HashMap;
+    let mut map: HashMap<String, crate::model::MapStats> = HashMap::new();
+
+    for h in history {
+        if !h.has_stats || h.map.is_empty() {
+            continue;
+        }
+        let entry = map.entry(h.map.clone()).or_insert_with(|| crate::model::MapStats {
+            map_name: h.map.clone(),
+            ..Default::default()
+        });
+        entry.games += 1;
+        if h.won {
+            entry.wins += 1;
+        }
+        entry.kills += h.kills;
+        entry.deaths += h.deaths;
+        entry.assists += h.assists;
+    }
+
+    let mut stats: Vec<crate::model::MapStats> = map.into_values().collect();
+    for s in &mut stats {
+        if s.games > 0 {
+            s.win_rate = s.wins * 100 / s.games;
+        }
+    }
+    stats.sort_by(|a, b| b.games.cmp(&a.games));
+    stats
+}

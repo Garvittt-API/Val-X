@@ -132,3 +132,45 @@ pub struct PlayerProfile {
     pub games: u32,
     pub history: Vec<HistoryEntry>,
 }
+
+#[derive(Serialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AgentStats {
+    pub agent_name: String,
+    pub agent_icon: String,
+    pub games: u32,
+    pub wins: u32,
+    pub win_rate: u32,
+    pub kills: u32,
+    pub deaths: u32,
+    pub assists: u32,
+    pub hs: u32,
+    pub acs: u32,
+    pub adr: u32,
+    pub kast: u32,
+}
+
+#[derive(Serialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct MapStats {
+    pub map_name: String,
+    pub games: u32,
+    pub wins: u32,
+    pub win_rate: u32,
+    pub kills: u32,
+    pub deaths: u32,
+    pub assists: u32,
+    pub top_agent: String,
+}
+
+#[derive(Serialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
+pub struct WeaponStats {
+    pub weapon_name: String,
+    pub kills: u32,
+    pub headshots: u32,
+    pub hs_percent: u32,
+    pub damage: u32,
+    pub kpr: u32,
+}
