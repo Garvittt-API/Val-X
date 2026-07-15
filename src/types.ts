@@ -80,6 +80,25 @@ export interface HistoryEntry {
   ranked: boolean;
   hasStats: boolean;
   scoreboard: ScoreEntry[];
+  roundTimeline: RoundResult[];
+  aces: number;
+  clutches: number;
+  firstBloods: number;
+  firstDeaths: number;
+  plants: number;
+  defuses: number;
+  attackRounds: number;
+  defenseRounds: number;
+  attackWon: number;
+  defenseWon: number;
+  totalDamage: number;
+}
+
+export interface RoundResult {
+  roundNum: number;
+  winningTeam: string;
+  isPistol: boolean;
+  selfTeam: string;
 }
 
 export interface MatchView {
@@ -115,7 +134,7 @@ export interface PlayerProfile {
   history: HistoryEntry[];
 }
 
-export type NavView = "dashboard" | "match" | "overlay" | "search" | "history" | "loadout" | "chat" | "themes" | "agent_stats" | "map_stats" | "trends";
+export type NavView = "dashboard" | "match" | "overlay" | "search" | "history" | "loadout" | "chat" | "themes" | "agent_stats" | "map_stats" | "trends" | "weapon_stats" | "leaderboard" | "crosshairs";
 
 export interface AgentStats {
   agentName: string;

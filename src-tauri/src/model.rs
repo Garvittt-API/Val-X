@@ -94,6 +94,27 @@ pub struct HistoryEntry {
     pub ranked: bool,
     pub has_stats: bool,
     pub scoreboard: Vec<ScoreEntry>,
+    pub round_timeline: Vec<RoundResult>,
+    pub aces: u32,
+    pub clutches: u32,
+    pub first_bloods: u32,
+    pub first_deaths: u32,
+    pub plants: u32,
+    pub defuses: u32,
+    pub attack_rounds: u32,
+    pub defense_rounds: u32,
+    pub attack_won: u32,
+    pub defense_won: u32,
+    pub total_damage: u32,
+}
+
+#[derive(Serialize, Clone, Debug, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RoundResult {
+    pub round_num: u32,
+    pub winning_team: String,
+    pub is_pistol: bool,
+    pub self_team: String,
 }
 
 #[derive(Serialize, Clone, Debug, PartialEq, Eq)]

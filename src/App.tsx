@@ -15,6 +15,9 @@ import LoadoutView from "./components/loadout/LoadoutView";
 import AgentStatsView from "./components/stats/AgentStatsView";
 import MapStatsView from "./components/stats/MapStatsView";
 import TrendsView from "./components/stats/TrendsView";
+import WeaponStatsView from "./components/stats/WeaponStatsView";
+import LeaderboardView from "./components/stats/LeaderboardView";
+import CrosshairView from "./components/stats/CrosshairView";
 import IntelligenceRail from "./components/layout/IntelligenceRail";
 import type { MatchView } from "./types";
 
@@ -67,6 +70,12 @@ function App() {
         return <MapStatsView />;
       case "trends":
         return <TrendsView />;
+      case "weapon_stats":
+        return <WeaponStatsView />;
+      case "leaderboard":
+        return <LeaderboardView />;
+      case "crosshairs":
+        return <CrosshairView />;
       default:
         return <Dashboard />;
     }

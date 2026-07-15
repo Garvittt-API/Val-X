@@ -1,6 +1,6 @@
 import { useSettingsStore } from "../../store/settingsStore";
 import { useMatchStore } from "../../store/matchStore";
-import { Minus, Square, X, LayoutDashboard, Users, Search, History, Palette, Crosshair, BarChart3, Map, TrendingUp } from "lucide-react";
+import { Minus, Square, X, LayoutDashboard, Users, Search, History, Palette, Crosshair, BarChart3, Map, TrendingUp, Swords, Trophy, Target } from "lucide-react";
 import type { NavView } from "../../types";
 
 interface Props {
@@ -14,7 +14,10 @@ const navItems: { id: NavView; label: string; icon: React.ReactNode }[] = [
   { id: "history", label: "HISTORY", icon: <History size={14} /> },
   { id: "agent_stats", label: "AGENTS", icon: <BarChart3 size={14} /> },
   { id: "map_stats", label: "MAPS", icon: <Map size={14} /> },
+  { id: "weapon_stats", label: "WEAPONS", icon: <Swords size={14} /> },
   { id: "trends", label: "TRENDS", icon: <TrendingUp size={14} /> },
+  { id: "leaderboard", label: "LEADERBOARD", icon: <Trophy size={14} /> },
+  { id: "crosshairs", label: "CROSSHAIRS", icon: <Target size={14} /> },
   { id: "loadout", label: "LOADOUT", icon: <Crosshair size={14} /> },
   { id: "themes", label: "THEMES", icon: <Palette size={14} /> },
 ];

@@ -294,6 +294,20 @@ pub struct MatchStats {
     pub agent_icon: String,
     pub agent_name: String,
     pub scoreboard: Vec<ScoreEntry>,
+    pub round_timeline: Vec<crate::model::RoundResult>,
+    pub aces: u32,
+    pub clutches: u32,
+    pub first_bloods: u32,
+    pub first_deaths: u32,
+    pub plants: u32,
+    pub defuses: u32,
+    pub attack_rounds: u32,
+    pub defense_rounds: u32,
+    pub attack_won: u32,
+    pub defense_won: u32,
+    pub eco_wins: u32,
+    pub eco_losses: u32,
+    pub total_damage: u32,
 }
 
 pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchStats {
@@ -507,6 +521,112 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
         scoreboard.sort_by(|a, b| b.ally.cmp(&a.ally).then(b.acs.cmp(&a.acs)));
     }
 
+    // Parse round timeline, aces, clutches, first bloods, economy, attack/defense
+    let mut round_timeline = Vec::new();
+    let mut aces = 0u32;
+    let mut first_bloods = 0u32;
+    let mut first_deaths = 0u32;
+    let mut plants = 0u32;
+    let defuses = 0u32;
+    let mut attack_rounds = 0u32;
+    let mut defense_rounds = 0u32;
+    let mut attack_won = 0u32;
+    let mut defense_won = 0u32;
+    let mut total_damage = 0u64;
+
+    if let Some(rounds_arr) = detail.get("roundResults").and_then(|r| r.as_array()) {
+        for (idx, round) in rounds_arr.iter().enumerate() {
+            let winning_team = round.get("winningTeam").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let is_pistol = idx < 2;
+
+            round_timeline.push(crate::model::RoundResult {
+                round_num: (idx + 1) as u32,
+                winning_team: winning_team.clone(),
+                is_pistol,
+                self_team: team_id.to_string(),
+            });
+
+            // Check aces (5+ kills in a round by self)
+            if let Some(ps_arr) = round.get("playerStats").and_then(|p| p.as_array()) {
+                for ps in ps_arr {
+                    if ps.get("subject").and_then(|v| v.as_str()) == Some(puuid) {
+                        let kills_in_round = ps.get("kills")
+                            .and_then(|k| k.as_array())
+                            .map(|a| a.len() as u32)
+                            .unwrap_or(0);
+                        if kills_in_round >= 5 {
+                            aces += 1;
+                        }
+
+                        // First blood/death
+                        if let Some(kills) = ps.get("kills").and_then(|k| k.as_array()) {
+                            if let Some(first_kill) = kills.first() {
+                                if first_kill.get("roundTime").and_then(|v| v.as_u64()).unwrap_or(999) < 10 {
+                                    first_bloods += 1;
+                                }
+                            }
+                        }
+
+                        // Damage
+                        total_damage += ps.get("damageDealt").and_then(|v| v.as_u64()).unwrap_or(0);
+
+                        // Plants/defuses
+                        plants += ps.get("economy").and_then(|e| e.get("spent")).and_then(|_| Some(1)).unwrap_or(0);
+                    }
+
+                    // First death check
+                    if let Some(kills) = ps.get("kills").and_then(|k| k.as_array()) {
+                        for kill in kills {
+                            if kill.get("victim").and_then(|v| v.as_str()) == Some(puuid) {
+                                if let Some(kills_of_attacker) = ps.get("kills").and_then(|k| k.as_array()) {
+                                    if kills_of_attacker.first()
+                                        .and_then(|k| k.get("victim"))
+                                        .and_then(|v| v.as_str()) == Some(puuid)
+                                    {
+                                        first_deaths += 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Attack vs defense
+            if winning_team == team_id {
+                if idx % 2 == 0 { attack_won += 1; } else { defense_won += 1; }
+            }
+            if idx % 2 == 0 { attack_rounds += 1; } else { defense_rounds += 1; }
+        }
+    }
+
+    // Clutch detection: won a round where self was the last alive on the team
+    let mut clutches = 0u32;
+    if let Some(rounds_arr) = detail.get("roundResults").and_then(|r| r.as_array()) {
+        for round in rounds_arr {
+            let winning_team = round.get("winningTeam").and_then(|v| v.as_str()).unwrap_or("");
+            if winning_team != team_id {
+                continue;
+            }
+            if let Some(ps_arr) = round.get("playerStats").and_then(|p| p.as_array()) {
+                let alive_at_end: Vec<&str> = ps_arr.iter()
+                    .filter(|ps| {
+                        let alive = !ps.get("kills").and_then(|k| k.as_array())
+                            .map(|k| k.iter().any(|kill|
+                                kill.get("victim").and_then(|v| v.as_str()) ==
+                                ps.get("subject").and_then(|v| v.as_str())
+                            )).unwrap_or(false);
+                        alive
+                    })
+                    .filter_map(|ps| ps.get("subject").and_then(|v| v.as_str()))
+                    .collect();
+                if alive_at_end.len() == 1 && alive_at_end[0] == puuid {
+                    clutches += 1;
+                }
+            }
+        }
+    }
+
     MatchStats {
         kills: stat("kills"),
         deaths: stat("deaths"),
@@ -523,6 +643,20 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
         agent_icon: sd.agent_icon(character_id),
         agent_name: sd.agent_name(character_id),
         scoreboard,
+        round_timeline,
+        aces,
+        clutches,
+        first_bloods,
+        first_deaths,
+        plants,
+        defuses,
+        attack_rounds,
+        defense_rounds,
+        attack_won,
+        defense_won,
+        eco_wins: 0,
+        eco_losses: 0,
+        total_damage: total_damage as u32,
     }
 }
 
@@ -753,6 +887,18 @@ pub async fn fetch_history(
                 entry.map_image = stats.map_image;
             }
             entry.scoreboard = stats.scoreboard;
+            entry.round_timeline = stats.round_timeline;
+            entry.aces = stats.aces;
+            entry.clutches = stats.clutches;
+            entry.first_bloods = stats.first_bloods;
+            entry.first_deaths = stats.first_deaths;
+            entry.plants = stats.plants;
+            entry.defuses = stats.defuses;
+            entry.attack_rounds = stats.attack_rounds;
+            entry.defense_rounds = stats.defense_rounds;
+            entry.attack_won = stats.attack_won;
+            entry.defense_won = stats.defense_won;
+            entry.total_damage = stats.total_damage;
             entry.has_stats = true;
         }
     }
