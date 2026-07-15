@@ -6,6 +6,7 @@ use std::time::Duration;
 pub fn local_client() -> Client {
     Client::builder()
         .danger_accept_invalid_certs(true)
+        .no_proxy()
         .build()
         .unwrap_or_else(|_| Client::new())
 }

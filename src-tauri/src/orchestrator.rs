@@ -118,13 +118,26 @@ async fn poll_once(
     encounter_path: &std::path::Path,
 ) -> Option<MatchView> {
     let lf = match read_lockfile() {
-        Ok(lf) => lf,
-        Err(_) => {
+        Ok(lf) => {
+            eprintln!("[ValX] Lockfile read OK: port={}", lf.port);
+            lf
+        }
+        Err(e) => {
+            eprintln!("[ValX] Lockfile error: {:?}", e);
             *last_match_id = None;
             return Some(assemble_view(MatchState::NoGame, String::new(), Vec::new(), false));
         }
     };
-    let ctx = fetch_auth(&lf).await.ok()?;
+    let ctx = match fetch_auth(&lf).await {
+        Ok(ctx) => {
+            eprintln!("[ValX] Auth OK: puuid={}", &ctx.puuid[..8]);
+            ctx
+        }
+        Err(e) => {
+            eprintln!("[ValX] Auth error: {:?}", e);
+            return Some(assemble_view(MatchState::NoGame, String::new(), Vec::new(), false));
+        }
+    };
     if version.is_none() {
         *version = fetch_client_version().await.ok();
     }
