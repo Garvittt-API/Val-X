@@ -16,35 +16,18 @@ const navItems: { id: NavView; label: string; icon: React.ReactNode }[] = [
   { id: "themes", label: "THEMES", icon: <Palette size={14} /> },
 ];
 
+function invokeCmd(cmd: string, args?: Record<string, unknown>) {
+  return (window as any).__TAURI__?.core?.invoke?.(cmd, args);
+}
+
 export default function Masthead({ cursorPos }: Props) {
   const currentView = useSettingsStore((s) => s.currentView);
   const setView = useSettingsStore((s) => s.setView);
   const view = useMatchStore((s) => s.view);
 
-  const handleMinimize = async () => {
-    try {
-      await (window as any).__TAURI__?.window?.getCurrentWindow?.()?.minimize?.();
-    } catch {}
-  };
-
-  const handleMaximize = async () => {
-    try {
-      const win = (window as any).__TAURI__?.window?.getCurrentWindow?.();
-      if (win) {
-        if (await win.isMaximized()) {
-          await win.unmaximize();
-        } else {
-          await win.maximize();
-        }
-      }
-    } catch {}
-  };
-
-  const handleClose = async () => {
-    try {
-      await (window as any).__TAURI__?.window?.getCurrentWindow?.()?.close?.();
-    } catch {}
-  };
+  const handleMinimize = () => invokeCmd("window_minimize");
+  const handleMaximize = () => invokeCmd("window_toggle_maximize");
+  const handleClose = () => invokeCmd("window_close");
 
   const isConnected = view.state !== "NoGame";
 

@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { useMatchStore } from "../../store/matchStore";
+
+function invokeCmd(cmd: string, args?: Record<string, unknown>) {
+  return (window as any).__TAURI__?.core?.invoke?.(cmd, args);
+}
 
 interface LoadoutData {
   playerCard: string;
@@ -16,19 +19,28 @@ export default function LoadoutView() {
   const me = useMatchStore((s) => s.view.me);
   const [loadout, setLoadout] = useState<LoadoutData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
     async function fetchLoadout() {
       try {
-        const data = await invoke<LoadoutData | null>("get_loadout");
-        setLoadout(data);
-      } catch {
-        // Loadout not available
+        const data = await invokeCmd("get_loadout");
+        if (!cancelled) {
+          setLoadout(data);
+        }
+      } catch (e: any) {
+        if (!cancelled) {
+          setError(e?.toString() || "Failed to load");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
     fetchLoadout();
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -39,15 +51,19 @@ export default function LoadoutView() {
       </div>
 
       {loading ? (
-        <div className="py-20 text-center fade-up">
-          <div className="text-[10px] font-mono text-white/20 animate-pulse">LOADING LOADOUT...</div>
+        <div className="py-24 text-center fade-up">
+          <div className="text-[10px] font-mono text-white/30 animate-pulse">LOADING LOADOUT...</div>
         </div>
-      ) : !loadout ? (
+      ) : error || !loadout ? (
         <div className="py-24 text-center fade-up">
           <div className="display-text text-4xl font-thin text-white/[0.12] mb-6">GEAR</div>
           <div className="w-12 h-px bg-white/[0.08] mx-auto mb-4" />
           <div className="micro-label mb-2">NO LOADOUT DATA</div>
-          <div className="text-[11px] text-white/20 font-mono mt-2">Launch VALORANT to view your equipped skins and items</div>
+          <div className="text-[11px] text-white/20 font-mono mt-2 max-w-xs mx-auto">
+            {error
+              ? "Could not fetch loadout. Make sure VALORANT is running."
+              : "Launch VALORANT to view your equipped skins and items"}
+          </div>
         </div>
       ) : (
         <div className="space-y-4">
@@ -114,8 +130,8 @@ export default function LoadoutView() {
           {/* Sprays */}
           <div className="fade-up" style={{ animationDelay: "0.15s" }}>
             <div className="micro-label mb-3">SPRAYS</div>
-            <div className="grid grid-cols-5 gap-px bg-white/[0.08]">
-              {loadout.sprays.length > 0 ? (
+            <div className="grid grid-cols-5 gap-px bg-white/[0.12]">
+              {loadout.sprays && loadout.sprays.length > 0 ? (
                 loadout.sprays.slice(0, 5).map((spray, i) => (
                   <div key={i} className="bg-bg-elevated p-3 flex items-center justify-center h-20">
                     {spray ? (

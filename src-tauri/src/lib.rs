@@ -222,6 +222,37 @@ async fn get_server_status(api_key: String) -> Result<serde_json::Value, String>
         .map(|v| serde_json::to_value(v).unwrap_or_default())
 }
 
+#[tauri::command]
+async fn window_minimize(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    if let Some(win) = app.get_webview_window("main") {
+        win.minimize().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+async fn window_toggle_maximize(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    if let Some(win) = app.get_webview_window("main") {
+        if win.is_maximized().map_err(|e| e.to_string())? {
+            win.unmaximize().map_err(|e| e.to_string())?;
+        } else {
+            win.maximize().map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+async fn window_close(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::Manager;
+    if let Some(win) = app.get_webview_window("main") {
+        win.close().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 pub fn run() {
     let wake = Arc::new(Notify::new());
     let combat = Arc::new(AtomicBool::new(false));
@@ -242,6 +273,9 @@ pub fn run() {
             get_recent_matches,
             get_leaderboard,
             get_server_status,
+            window_minimize,
+            window_toggle_maximize,
+            window_close,
         ])
         .setup(move |app| {
             let handle = app.handle().clone();
