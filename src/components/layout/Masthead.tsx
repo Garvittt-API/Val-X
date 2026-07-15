@@ -72,23 +72,24 @@ export default function Masthead({ cursorPos }: Props) {
         </div>
       </div>
 
-      {/* Main masthead */}
-      <div className="flex items-center px-5 h-9">
-        {/* Wordmark with spotlight mask - draggable */}
-        <div data-tauri-drag-region className="flex-shrink-0">
-          <h1
-            className="display-text text-[4vw] font-thin text-white/[0.1] select-none spotlight-mask leading-none tracking-tight"
-            style={{
-              "--mx": `${cursorPos.x}px`,
-              "--my": `${cursorPos.y}px`,
-              fontStretch: "125%",
-            } as React.CSSProperties}
-          >
-            VALX
-          </h1>
-        </div>
+      {/* Main masthead - draggable except buttons */}
+      <div
+        className="flex items-center px-5 h-9"
+        data-tauri-drag-region
+      >
+        {/* Wordmark with spotlight mask */}
+        <h1
+          className="display-text text-[4vw] font-thin text-white/[0.1] select-none spotlight-mask leading-none tracking-tight shrink-0"
+          style={{
+            "--mx": `${cursorPos.x}px`,
+            "--my": `${cursorPos.y}px`,
+            fontStretch: "125%",
+          } as React.CSSProperties}
+        >
+          VALX
+        </h1>
 
-        {/* Nav items - NOT draggable, scrollable */}
+        {/* Nav items - buttons are no-drag via CSS */}
         <nav className="flex items-center gap-0.5 overflow-x-auto ml-4 flex-1 min-w-0">
           {navItems.map((item) => (
             <button

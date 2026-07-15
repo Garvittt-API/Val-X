@@ -138,6 +138,11 @@ body {
   background: rgba(255, 255, 255, 0.25);
 }
 
+/* Nav scroll inside drag region */
+[data-tauri-drag-region] nav {
+  -webkit-app-region: no-drag;
+}
+
 /* ── Tauri drag region ── */
 
 [data-tauri-drag-region] {
