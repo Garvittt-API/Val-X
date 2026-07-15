@@ -15,9 +15,10 @@ pub enum LockfileError {
 
 pub fn parse_lockfile(contents: &str) -> Result<Lockfile, LockfileError> {
     let parts: Vec<&str> = contents.trim().split(':').collect();
-    if parts.len() != 5 {
+    if parts.len() < 5 {
         return Err(LockfileError::Malformed);
     }
+    // Format: name:pid:port:password:protocol
     Ok(Lockfile {
         port: parts[2].parse().map_err(|_| LockfileError::Malformed)?,
         password: parts[3].to_string(),
