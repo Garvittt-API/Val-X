@@ -79,23 +79,23 @@ export default function Masthead({ cursorPos }: Props) {
       >
         {/* Wordmark with spotlight mask */}
         <h1
-          className="display-text text-[5vw] font-thin text-white/[0.1] select-none spotlight-mask leading-none tracking-tight"
+          className="display-text text-[4vw] font-thin text-white/[0.1] select-none spotlight-mask leading-none tracking-tight shrink-0"
           style={{
             "--mx": `${cursorPos.x}px`,
             "--my": `${cursorPos.y}px`,
             fontStretch: "125%",
           } as React.CSSProperties}
         >
-          VALX CONTROL
+          VALX
         </h1>
 
         {/* Nav items */}
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-0.5 overflow-x-auto ml-4">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setView(item.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 text-[10px] font-semibold tracking-[0.15em] uppercase transition-colors ${
+              className={`flex items-center gap-1.5 px-2 py-1 text-[9px] font-semibold tracking-[0.12em] uppercase transition-colors whitespace-nowrap shrink-0 ${
                 currentView === item.id
                   ? "text-neon"
                   : "text-white/30 hover:text-white/60"
