@@ -526,7 +526,7 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
     let mut aces = 0u32;
     let mut first_bloods = 0u32;
     let mut first_deaths = 0u32;
-    let mut plants = 0u32;
+    let plants = 0u32;
     let defuses = 0u32;
     let mut attack_rounds = 0u32;
     let mut defense_rounds = 0u32;
@@ -534,10 +534,14 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
     let mut defense_won = 0u32;
     let mut total_damage = 0u64;
 
+    // Collect all kill events per round for first blood/death detection
+    let mut round_first_blood: Vec<Option<String>> = Vec::new();
+
     if let Some(rounds_arr) = detail.get("roundResults").and_then(|r| r.as_array()) {
         for (idx, round) in rounds_arr.iter().enumerate() {
             let winning_team = round.get("winningTeam").and_then(|v| v.as_str()).unwrap_or("").to_string();
-            let is_pistol = idx < 2;
+            // Pistol rounds: round 1 and round 13 (0-indexed: 0 and 12)
+            let is_pistol = idx == 0 || idx == 12;
 
             round_timeline.push(crate::model::RoundResult {
                 round_num: (idx + 1) as u32,
@@ -546,7 +550,28 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
                 self_team: team_id.to_string(),
             });
 
-            // Check aces (5+ kills in a round by self)
+            // Find the earliest kill in this round for first blood detection
+            let mut earliest_kill_time = u64::MAX;
+            let mut first_killer: Option<String> = None;
+            let mut first_victim: Option<String> = None;
+
+            if let Some(ps_arr) = round.get("playerStats").and_then(|p| p.as_array()) {
+                for ps in ps_arr {
+                    if let Some(kills) = ps.get("kills").and_then(|k| k.as_array()) {
+                        for kill in kills {
+                            let time = kill.get("roundTime").and_then(|v| v.as_u64()).unwrap_or(u64::MAX);
+                            if time < earliest_kill_time {
+                                earliest_kill_time = time;
+                                first_killer = ps.get("subject").and_then(|v| v.as_str()).map(String::from);
+                                first_victim = kill.get("victim").and_then(|v| v.as_str()).map(String::from);
+                            }
+                        }
+                    }
+                }
+            }
+
+            round_first_blood.push(first_killer.clone());
+
             if let Some(ps_arr) = round.get("playerStats").and_then(|p| p.as_array()) {
                 for ps in ps_arr {
                     if ps.get("subject").and_then(|v| v.as_str()) == Some(puuid) {
@@ -558,45 +583,34 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
                             aces += 1;
                         }
 
-                        // First blood/death
-                        if let Some(kills) = ps.get("kills").and_then(|k| k.as_array()) {
-                            if let Some(first_kill) = kills.first() {
-                                if first_kill.get("roundTime").and_then(|v| v.as_u64()).unwrap_or(999) < 10 {
-                                    first_bloods += 1;
-                                }
-                            }
+                        // First blood: self got the first kill in the round
+                        if first_killer.as_deref() == Some(puuid) {
+                            first_bloods += 1;
+                        }
+
+                        // First death: self was the first victim in the round
+                        if first_victim.as_deref() == Some(puuid) {
+                            first_deaths += 1;
                         }
 
                         // Damage
                         total_damage += ps.get("damageDealt").and_then(|v| v.as_u64()).unwrap_or(0);
-
-                        // Plants/defuses
-                        plants += ps.get("economy").and_then(|e| e.get("spent")).and_then(|_| Some(1)).unwrap_or(0);
-                    }
-
-                    // First death check
-                    if let Some(kills) = ps.get("kills").and_then(|k| k.as_array()) {
-                        for kill in kills {
-                            if kill.get("victim").and_then(|v| v.as_str()) == Some(puuid) {
-                                if let Some(kills_of_attacker) = ps.get("kills").and_then(|k| k.as_array()) {
-                                    if kills_of_attacker.first()
-                                        .and_then(|k| k.get("victim"))
-                                        .and_then(|v| v.as_str()) == Some(puuid)
-                                    {
-                                        first_deaths += 1;
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
 
-            // Attack vs defense
-            if winning_team == team_id {
-                if idx % 2 == 0 { attack_won += 1; } else { defense_won += 1; }
+            // Attack vs defense: rounds 0-11 are attack side, 12-23 are defense side
+            if idx < 12 {
+                attack_rounds += 1;
+                if winning_team == team_id {
+                    attack_won += 1;
+                }
+            } else {
+                defense_rounds += 1;
+                if winning_team == team_id {
+                    defense_won += 1;
+                }
             }
-            if idx % 2 == 0 { attack_rounds += 1; } else { defense_rounds += 1; }
         }
     }
 
@@ -609,19 +623,36 @@ pub fn parse_match_stats(detail: &Value, puuid: &str, sd: &StaticData) -> MatchS
                 continue;
             }
             if let Some(ps_arr) = round.get("playerStats").and_then(|p| p.as_array()) {
-                let alive_at_end: Vec<&str> = ps_arr.iter()
+                // Collect all victims in this round
+                let mut victims: Vec<String> = Vec::new();
+                for ps in ps_arr {
+                    if let Some(kills) = ps.get("kills").and_then(|k| k.as_array()) {
+                        for kill in kills {
+                            if let Some(victim) = kill.get("victim").and_then(|v| v.as_str()) {
+                                victims.push(victim.to_string());
+                            }
+                        }
+                    }
+                }
+
+                // Find alive players on the winning team
+                let alive_count = ps_arr.iter()
                     .filter(|ps| {
-                        let alive = !ps.get("kills").and_then(|k| k.as_array())
-                            .map(|k| k.iter().any(|kill|
-                                kill.get("victim").and_then(|v| v.as_str()) ==
-                                ps.get("subject").and_then(|v| v.as_str())
-                            )).unwrap_or(false);
-                        alive
+                        let subject = ps.get("subject").and_then(|v| v.as_str()).unwrap_or("");
+                        // Player is alive if they are NOT in the victims list
+                        !victims.iter().any(|v| v == subject)
                     })
-                    .filter_map(|ps| ps.get("subject").and_then(|v| v.as_str()))
-                    .collect();
-                if alive_at_end.len() == 1 && alive_at_end[0] == puuid {
-                    clutches += 1;
+                    .count();
+
+                // Check if self was the last alive
+                if alive_count == 1 {
+                    let self_alive = ps_arr.iter().any(|ps| {
+                        let subject = ps.get("subject").and_then(|v| v.as_str()).unwrap_or("");
+                        subject == puuid && !victims.iter().any(|v| v == subject)
+                    });
+                    if self_alive {
+                        clutches += 1;
+                    }
                 }
             }
         }

@@ -40,6 +40,7 @@ pub struct MatchListResponse {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LeaderboardEntry {
     #[serde(default)]
     pub player_uuid: String,

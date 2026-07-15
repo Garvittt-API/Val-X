@@ -95,11 +95,13 @@ impl EncounterStore {
             .collect()
     }
 
-    pub fn apply_outcome(&mut self, match_id: &str, won: bool) {
+    pub fn apply_outcome(&mut self, match_id: &str, won: bool, self_puuid: &str) {
         if let Some(record) = self.match_history.iter().find(|m| m.match_id == match_id) {
-            let players: Vec<String> = record.players.iter().map(|p| p.puuid.clone()).collect();
-            for puuid in &players {
-                if let Some(entry) = self.encounters.get_mut(puuid) {
+            for player in &record.players {
+                if player.puuid == self_puuid {
+                    continue;
+                }
+                if let Some(entry) = self.encounters.get_mut(&player.puuid) {
                     if won {
                         entry.wins += 1;
                     } else {

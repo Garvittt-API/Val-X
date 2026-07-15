@@ -7,13 +7,13 @@ pub fn local_client() -> Client {
     Client::builder()
         .danger_accept_invalid_certs(true)
         .build()
-        .expect("failed to build local http client")
+        .unwrap_or_else(|_| Client::new())
 }
 
 pub fn pvp_client() -> Client {
     Client::builder()
         .build()
-        .expect("failed to build pvp http client")
+        .unwrap_or_else(|_| Client::new())
 }
 
 async fn send_retry<F: Fn() -> RequestBuilder>(make: F) -> Option<Value> {

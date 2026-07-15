@@ -1,29 +1,10 @@
 import { useMatchStore } from "../../store/matchStore";
 
-interface WeaponData {
-  name: string;
-  kills: number;
-  headshots: number;
-  hs: number;
-  games: number;
-}
-
-const WEAPON_TYPES = ["All", "Rifle", "SMG", "Sniper", "Pistol", "Shotgun", "LMG", "Melee"];
-
 export default function WeaponStatsView() {
   const view = useMatchStore((s) => s.view);
   const history = view.history.filter((h) => h.hasStats);
 
-  // Aggregate weapon stats from scoreboards
-  const weaponMap = new Map<string, WeaponData>();
-  for (const match of history) {
-    for (const player of match.scoreboard) {
-      if (player.isSelf) continue;
-      // We don't have per-weapon data from scoreboards, so we show aggregate
-    }
-  }
-
-  // Show aggregate combat stats instead
+  // Show aggregate combat stats
   const totalKills = history.reduce((s, h) => s + h.kills, 0);
   const totalDeaths = history.reduce((s, h) => s + h.deaths, 0);
   const totalAssists = history.reduce((s, h) => s + h.assists, 0);

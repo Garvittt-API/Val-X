@@ -186,7 +186,7 @@ async fn poll_once(
         if !last.players.is_empty() && last.state == MatchState::CoreGame {
             let won = last.ally_score > last.enemy_score;
             if let Some(ref mid) = last_match_id.clone() {
-                encounters.apply_outcome(mid, won);
+                encounters.apply_outcome(mid, won, &ctx.puuid);
                 let _ = encounters.save(encounter_path);
             }
         }

@@ -38,18 +38,15 @@ pub fn parse_entitlements(json: &Value) -> Result<AuthContext, AuthError> {
 
 pub fn pvp_headers(ctx: &AuthContext, client_version: &str) -> HeaderMap {
     let mut headers = HeaderMap::new();
-    headers.insert(
-        AUTHORIZATION,
-        HeaderValue::from_str(&format!("Bearer {}", ctx.access_token)).unwrap(),
-    );
-    headers.insert(
-        "X-Riot-Entitlements-JWT",
-        HeaderValue::from_str(&ctx.entitlements).unwrap(),
-    );
-    headers.insert(
-        "X-Riot-ClientVersion",
-        HeaderValue::from_str(client_version).unwrap(),
-    );
+    if let Ok(val) = HeaderValue::from_str(&format!("Bearer {}", ctx.access_token)) {
+        headers.insert(AUTHORIZATION, val);
+    }
+    if let Ok(val) = HeaderValue::from_str(&ctx.entitlements) {
+        headers.insert("X-Riot-Entitlements-JWT", val);
+    }
+    if let Ok(val) = HeaderValue::from_str(client_version) {
+        headers.insert("X-Riot-ClientVersion", val);
+    }
     headers.insert(
         "X-Riot-ClientPlatform",
         HeaderValue::from_static(CLIENT_PLATFORM),

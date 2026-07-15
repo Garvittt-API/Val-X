@@ -104,7 +104,6 @@ impl StaticData {
             ("ff93d940-4796-4d43-a203-ae4c7e566ad7", "Vyse", "Sentinel", "https://media.valorant-api.com/agents/ff93d940-4796-4d43-a203-ae4c7e566ad7/displayicon.png"),
             ("22690a55-4bfa-4027-9200-f50a58376f29", "Iso", "Duelist", "https://media.valorant-api.com/agents/22690a55-4bfa-4027-9200-f50a58376f29/displayicon.png"),
             ("cf8dd0a8-4094-4375-9265-a4ff0bbf6b1e", "Tejo", "Initiator", "https://media.valorant-api.com/agents/cf8dd0a8-4094-4375-9265-a4ff0bbf6b1e/displayicon.png"),
-            ("0e0cd06a-40bf-412a-948a-19973138953f", "Vyse", "Sentinel", "https://media.valorant-api.com/agents/0e0cd06a-40bf-412a-948a-19973138953f/displayicon.png"),
         ];
 
         for (id, name, role, icon) in agents {
@@ -160,18 +159,18 @@ impl StaticData {
             );
         }
 
-        // Map data
+        // Map data with correct UUIDs
         let maps = vec![
             ("0de97f44-49f6-4062-a2cc-6d72072b58b6", "Bind"),
             ("b52335db-45f8-40b8-9886-5f1aa9ac4480", "Haven"),
             ("d960549e-445b-42d3-bddb-4281529f3f09", "Split"),
             ("2c9d57ec-44cf-4e47-a185-1437f3f8807c", "Ascent"),
-            ("eb93388a-4ef1-40c7-a6e3-6713f99050cc", "Icebox"),
-            ("92584dfd-4d60-346e-e838-a3e7048be8b3", "Breeze"),
+            ("65062f54-49a6-4a3f-8e44-2f03463269d4", "Icebox"),
+            ("7eaecc13-4f9a-40c8-8b1d-42f4b4e2fd40", "Breeze"),
             ("2fb9a4fd-47b8-4e5d-908f-1fb63588c629", "Fracture"),
             ("fd267378-4110-4088-a3f2-d0207fb464d8", "Pearl"),
-            ("92584dfd-4d60-346e-e838-a3e7048be8b3", "Lotus"),
-            ("2fb9a4fd-47b8-4e5d-908f-1fb63588c629", "Sunset"),
+            ("124542d0-4707-4d9a-9109-cf13e75eea32", "Lotus"),
+            ("92584dfd-4d60-346e-e838-a3e7048be8b3", "Sunset"),
         ];
 
         for (id, name) in maps {
