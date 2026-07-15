@@ -23,27 +23,26 @@ export default function Masthead({ cursorPos }: Props) {
 
   const handleMinimize = async () => {
     try {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      await getCurrentWindow().minimize();
+      await (window as any).__TAURI__?.window?.getCurrentWindow?.()?.minimize?.();
     } catch {}
   };
 
   const handleMaximize = async () => {
     try {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      const win = getCurrentWindow();
-      if (await win.isMaximized()) {
-        await win.unmaximize();
-      } else {
-        await win.maximize();
+      const win = (window as any).__TAURI__?.window?.getCurrentWindow?.();
+      if (win) {
+        if (await win.isMaximized()) {
+          await win.unmaximize();
+        } else {
+          await win.maximize();
+        }
       }
     } catch {}
   };
 
   const handleClose = async () => {
     try {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      await getCurrentWindow().close();
+      await (window as any).__TAURI__?.window?.getCurrentWindow?.()?.close?.();
     } catch {}
   };
 

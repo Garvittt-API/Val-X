@@ -25,7 +25,8 @@ export default function IntelligenceRail() {
             </div>
           </div>
         ) : (
-          <div className="text-white/15 text-xs font-mono py-8 text-center">
+          <div className="text-white/25 text-[11px] font-mono py-10 text-center">
+            <div className="text-white/10 text-lg mb-2">—</div>
             NO PLAYER DATA
           </div>
         )}
@@ -64,7 +65,8 @@ export default function IntelligenceRail() {
             ))}
           </div>
         ) : (
-          <div className="text-white/15 text-xs font-mono py-8 text-center">
+          <div className="text-white/25 text-[11px] font-mono py-10 text-center">
+            <div className="text-white/10 text-lg mb-2">—</div>
             NO MATCH DATA
           </div>
         )}

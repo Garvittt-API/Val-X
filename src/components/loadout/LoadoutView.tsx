@@ -43,10 +43,11 @@ export default function LoadoutView() {
           <div className="text-[10px] font-mono text-white/20 animate-pulse">LOADING LOADOUT...</div>
         </div>
       ) : !loadout ? (
-        <div className="py-20 text-center fade-up">
-          <div className="display-text text-4xl font-thin text-white/[0.06] mb-4">GEAR</div>
-          <div className="micro-label">NO LOADOUT DATA AVAILABLE</div>
-          <div className="text-[10px] font-mono text-white/15 mt-2">Launch VALORANT to view your loadout</div>
+        <div className="py-24 text-center fade-up">
+          <div className="display-text text-4xl font-thin text-white/[0.12] mb-6">GEAR</div>
+          <div className="w-12 h-px bg-white/[0.08] mx-auto mb-4" />
+          <div className="micro-label mb-2">NO LOADOUT DATA</div>
+          <div className="text-[11px] text-white/20 font-mono mt-2">Launch VALORANT to view your equipped skins and items</div>
         </div>
       ) : (
         <div className="space-y-4">

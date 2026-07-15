@@ -98,9 +98,11 @@ export default function MatchHistory() {
           ))}
         </div>
       ) : (
-        <div className="py-20 text-center fade-up">
-          <div className="display-text text-4xl font-thin text-white/[0.06] mb-4">LOG</div>
-          <div className="micro-label">NO MATCH RECORDS AVAILABLE</div>
+        <div className="py-24 text-center fade-up">
+          <div className="display-text text-4xl font-thin text-white/[0.12] mb-6">LOG</div>
+          <div className="w-12 h-px bg-white/[0.08] mx-auto mb-4" />
+          <div className="micro-label mb-2">NO MATCH RECORDS</div>
+          <div className="text-[11px] text-white/20 font-mono mt-2">Play competitive matches to see your history here</div>
         </div>
       )}
     </div>

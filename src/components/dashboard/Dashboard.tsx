@@ -95,10 +95,18 @@ export default function Dashboard() {
 
       {/* No Game State */}
       {view.state === "NoGame" && !me && (
-        <div className="fade-up flex items-center justify-center py-20">
+        <div className="fade-up flex items-center justify-center py-24">
           <div className="text-center">
-            <div className="display-text text-6xl font-thin text-white/[0.06] mb-4">VALX</div>
-            <div className="micro-label">AWAITING CLIENT CONNECTION</div>
+            <div className="display-text text-5xl font-thin text-white/[0.12] mb-6">VALX</div>
+            <div className="w-16 h-px bg-white/[0.08] mx-auto mb-6" />
+            <div className="micro-label mb-2">AWAITING CLIENT CONNECTION</div>
+            <div className="text-[11px] text-white/20 font-mono mt-3 max-w-xs mx-auto leading-relaxed">
+              Launch VALORANT to begin tracking. The app will automatically detect your match state and populate data.
+            </div>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-err animate-pulse" />
+              <span className="text-[10px] font-mono text-white/30">CLIENT OFFLINE</span>
+            </div>
           </div>
         </div>
       )}
